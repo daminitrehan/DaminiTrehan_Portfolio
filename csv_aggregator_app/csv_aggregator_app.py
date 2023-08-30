@@ -1,11 +1,18 @@
 import streamlit as st
 import pandas as pd
 import os
+import re
 from fuzzywuzzy import process
 
 def fuzzy_match_names(known_names, input_name):
     best_match = process.extractOne(input_name, known_names, scorer=process.fuzz.ratio)
     return best_match[0] if best_match[1] >= 80 else "No match found"
+
+def parse_full_name(text):
+    # Use a regular expression to extract the full name from text
+    name_pattern = r"([A-Z][a-z]* [A-Z][a-z]*)"
+    match = re.search(name_pattern, text)
+    return match.group(1) if match else text
 
 def main():
     st.title("Fuzzy Name Matcher")
@@ -31,10 +38,10 @@ def main():
         name_column = st.selectbox("Select the column containing names:", possible_name_columns)
         
         known_names = []  # List to store known names
-        # Iterate through uploaded Excel files and extract names from the selected column
+        # Iterate through uploaded Excel files and extract and parse names from the selected column
         for excel_file in uploaded_files:
             df = pd.read_excel(excel_file, sheet_name=0)  # Read the first sheet
-            known_names.extend(df[name_column].tolist())
+            known_names.extend(df[name_column].dropna().astype(str).apply(parse_full_name).tolist())
         
         input_name = st.text_input("Enter the name to match:", key="input_name")
         
