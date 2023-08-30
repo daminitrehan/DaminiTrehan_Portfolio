@@ -10,15 +10,15 @@ def fuzzy_match_names(known_names, input_name):
 def main():
     st.title("Fuzzy Name Matcher")
 
-    # Upload multiple CSV files
-    uploaded_files = st.file_uploader("Upload CSV Files", type="csv", accept_multiple_files=True, key="upload")
+    # Upload multiple Excel files (first sheet only)
+    uploaded_files = st.file_uploader("Upload Excel Files", type=["xlsx"], accept_multiple_files=True, key="upload")
 
     if uploaded_files:
-        column_names = []  # List to store column names in all uploaded CSV files
+        column_names = []  # List to store column names in all uploaded Excel files
         
-        # Iterate through uploaded CSV files and extract column names
-        for csv_file in uploaded_files:
-            df = pd.read_csv(csv_file)
+        # Iterate through uploaded Excel files and extract column names from the first sheet
+        for excel_file in uploaded_files:
+            df = pd.read_excel(excel_file, sheet_name=0)  # Read the first sheet
             column_names.extend(df.columns.tolist())
         
         # Auto-detect columns that might contain names (based on common naming patterns)
@@ -31,9 +31,9 @@ def main():
         name_column = st.selectbox("Select the column containing names:", possible_name_columns)
         
         known_names = []  # List to store known names
-        # Iterate through uploaded CSV files and extract names from the selected column
-        for csv_file in uploaded_files:
-            df = pd.read_csv(csv_file)
+        # Iterate through uploaded Excel files and extract names from the selected column
+        for excel_file in uploaded_files:
+            df = pd.read_excel(excel_file, sheet_name=0)  # Read the first sheet
             known_names.extend(df[name_column].tolist())
         
         input_name = st.text_input("Enter the name to match:", key="input_name")
@@ -53,5 +53,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
